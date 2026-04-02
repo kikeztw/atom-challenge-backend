@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { TaskService } from '../services/TaskService';
-import { createTaskSchema, updateTaskSchema, taskIdSchema, userIdHeaderSchema } from '../types/schemas';
+import { createTaskSchema, updateTaskSchema, taskIdSchema } from '../types/schemas';
 import { ZodError } from 'zod';
+import { AuthRequest } from '../middleware/authMiddleware';
 
 export class TaskController {
   private taskService: TaskService;
@@ -10,23 +11,19 @@ export class TaskController {
     this.taskService = taskService;
   }
 
-  getTasks = async (req: Request, res: Response): Promise<void> => {
+  getTasks = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userId = userIdHeaderSchema.parse(req.headers['x-user-id']);
+      const userId = req.userId!;
       const tasks = await this.taskService.getUserTasks(userId);
       res.status(200).json({ tasks });
     } catch (error) {
-      if (error instanceof ZodError) {
-        res.status(400).json({ error: 'User ID header is required', code: 'MISSING_USER_ID' });
-        return;
-      }
       res.status(500).json({ error: 'Internal server error', code: 'SERVER_ERROR' });
     }
   };
 
-  createTask = async (req: Request, res: Response): Promise<void> => {
+  createTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userId = userIdHeaderSchema.parse(req.headers['x-user-id']);
+      const userId = req.userId!;
       const taskData = createTaskSchema.parse({ ...req.body, userId });
       const task = await this.taskService.createTask(userId, taskData);
       res.status(201).json({ task });
@@ -39,9 +36,9 @@ export class TaskController {
     }
   };
 
-  updateTask = async (req: Request, res: Response): Promise<void> => {
+  updateTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userId = userIdHeaderSchema.parse(req.headers['x-user-id']);
+      const userId = req.userId!;
       const taskId = taskIdSchema.parse(req.params.id);
       const taskData = updateTaskSchema.parse(req.body);
       
@@ -66,9 +63,9 @@ export class TaskController {
     }
   };
 
-  deleteTask = async (req: Request, res: Response): Promise<void> => {
+  deleteTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userId = userIdHeaderSchema.parse(req.headers['x-user-id']);
+      const userId = req.userId!;
       const taskId = taskIdSchema.parse(req.params.id);
       
       const success = await this.taskService.deleteTask(taskId, userId);

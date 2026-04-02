@@ -29,10 +29,12 @@ export interface UpdateTaskDTO {
 export interface AuthCheckResponse {
   exists: boolean;
   user?: User;
+  token?: string;
 }
 
 export interface AuthRegisterResponse {
   user: User;
+  token: string;
 }
 
 export interface TaskResponse {

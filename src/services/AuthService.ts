@@ -1,5 +1,6 @@
 import { UserRepository } from '../repositories/UserRepository';
 import { AuthCheckResponse, AuthRegisterResponse } from '../types';
+import { generateToken } from '../utils/jwt';
 
 export class AuthService {
   private userRepository: UserRepository;
@@ -13,9 +14,11 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(normalizedEmail);
 
     if (user) {
+      const token = generateToken(user.id, user.email);
       return {
         exists: true,
         user,
+        token,
       };
     }
 
@@ -33,9 +36,11 @@ export class AuthService {
     }
 
     const user = await this.userRepository.create(normalizedEmail);
+    const token = generateToken(user.id, user.email);
 
     return {
       user,
+      token,
     };
   }
 }
