@@ -54,7 +54,7 @@ This will start the functions emulator at `http://localhost:5001`.
 ### Authentication
 - `POST /auth/check` - Check if email exists
   - Body: `{ email: string }`
-  - Response: `{ exists: boolean, user?: User }`
+  - Response: `{ exists: boolean, user?: User, tokenL token }`
 
 - `POST /auth/register` - Register new user
   - Body: `{ email: string }`
